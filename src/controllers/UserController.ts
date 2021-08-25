@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { Types } from 'mongoose';
+
 import User from '../schemas/User';
 import Controller from './Controller';
+import ValidationService from '../services/ValidationService';
 
 class UserControler extends Controller {
   constructor() {
@@ -25,9 +27,11 @@ class UserControler extends Controller {
   private async show(req: Request, res: Response, next: NextFunction): Promise<Response> {
     const { id } = req.params;
 
-    if (!Types.ObjectId.isValid(id)) return res.status(400).send('Id inválido');
+    if (!ValidationService.validateId(id)) return res.status(400).send('Id inválido');
 
     const user = await User.findById(id);
+
+    if (!user) return res.status(404).send('Usuário não encontrado');
 
     return res.send(user);
   }
@@ -36,7 +40,7 @@ class UserControler extends Controller {
     const { email } = req.body;
     const userExists = await User.findOne({ email });
 
-    if (userExists) return res.status(204).send('Usuário já existente');
+    if (userExists) return res.status(202).send('Usuário já existente');
 
     const user = await User.create(req.body);
 
@@ -46,7 +50,7 @@ class UserControler extends Controller {
   private async update(req: Request, res: Response, next: NextFunction):Promise<Response> {
     const { id } = req.params;
 
-    if (!Types.ObjectId.isValid(id)) return res.status(400).send('Id inválido');
+    if (!ValidationService.validateId(id)) return res.status(400).send('Id inválido');
 
     const user = await User.findById(id);
 
@@ -56,19 +60,19 @@ class UserControler extends Controller {
       return res.send(updatedUser);
     }
 
-    return res.status(204).send('Usuário não encontrado');
+    return res.status(404).send('Usuário não encontrado');
   }
 
   private async delete(req: Request, res: Response, next: NextFunction): Promise<Response> {
     const { id } = req.params;
 
-    if (!Types.ObjectId.isValid(id)) return res.status(400).send('Id inválido');
+    if (!ValidationService.validateId(id)) return res.status(400).send('Id inválido');
 
     const user = await User.findByIdAndDelete(id);
 
-    if (!user) return res.status(204).send('Usuário não encontrado');
+    if (!user) return res.status(404).send('Usuário não encontrado');
 
-    return res.send('Usuário deletado com sucesso.');
+    return res.status(200).send('Usuário deletado com sucesso.');
   }
 }
 
