@@ -4,6 +4,11 @@ import { Types } from 'mongoose';
 import User from '../schemas/User';
 import Controller from './Controller';
 import ValidationService from '../services/ValidationService';
+import HttpStatusCode from '../responses/HttpStatusCode';
+import HttpExceptions from '../errors/HttpExceptions';
+import ServerErrorException from '../errors/ServerErrorException';
+import IdInvalidException from '../errors/IdInvalidException';
+import NoContentException from '../errors/NoContentException';
 
 class UserControler extends Controller {
   constructor() {
@@ -19,60 +24,107 @@ class UserControler extends Controller {
   }
 
   private async list(req: Request, res: Response, next: NextFunction): Promise<Response> {
-    const users = await User.find();
-
-    return res.send(users);
+    try {
+      // eslint-disable-next-line indent
+        const users = await User.find();// eslint-disable-next-line indent
+        return res.send(users);
+    } catch (error) {
+      // eslint-disable-next-line indent
+        return res.send(new ServerErrorException(error));
+    }
   }
 
   private async show(req: Request, res: Response, next: NextFunction): Promise<Response> {
-    const { id } = req.params;
-
-    if (!ValidationService.validateId(id)) return res.status(400).send('Id inválido');
-
-    const user = await User.findById(id);
-
-    if (!user) return res.status(404).send('Usuário não encontrado');
-
-    return res.send(user);
+    try {
+      // eslint-disable-next-line indent
+        const { id } = req.params;// eslint-disable-next-line indent
+        const user = await User.findById(id);// eslint-disable-next-line indent
+        // eslint-disable-next-line indent
+        if (!ValidationService.validateId(id)) return res.send(new IdInvalidException());
+      // eslint-disable-next-line indent
+        if (!user) return res.send(new NoContentException());
+      // eslint-disable-next-line indent
+        return res.send(user);
+    } catch (error) {
+      // eslint-disable-next-line indent
+        // eslint-disable-next-line indent
+        res.send(new ServerErrorException(error));
+    }
   }
 
   private async create(req: Request, res: Response, next: NextFunction):Promise<Response> {
-    const { email } = req.body;
-    const userExists = await User.findOne({ email });
+    try {
+      // eslint-disable-next-line indent
+        const { email } = req.body;
+      // eslint-disable-next-line indent
+        const userExists = await User.findOne({ email });
 
-    if (userExists) return res.status(202).send('Usuário já existente');
+      // eslint-disable-next-line indent
+        if (userExists) return res.status(202).send('Usuário já existente');
 
-    const user = await User.create(req.body);
+      // eslint-disable-next-line indent
+        const user = await User.create(req.body);
 
-    return res.status(201).send('Usuário cadastrado com sucesso.');
+      // eslint-disable-next-line indent
+        return res.status(201).send('Usuário cadastrado com sucesso.');
+    } catch (error) {
+      // eslint-disable-next-line indent
+        // eslint-disable-next-line indent
+        return res.send(new ServerErrorException(error));
+    }
   }
 
   private async update(req: Request, res: Response, next: NextFunction):Promise<Response> {
-    const { id } = req.params;
+    try {
+      // eslint-disable-next-line indent
+        const { id } = req.params;
 
-    if (!ValidationService.validateId(id)) return res.status(400).send('Id inválido');
+      // eslint-disable-next-line indent
+        if (!ValidationService.validateId(id)) return res.send(new IdInvalidException());
 
-    const user = await User.findById(id);
+      // eslint-disable-next-line indent
+        const user = await User.findById(id);
 
-    if (user) {
-      const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true });
+      if (user) {
+        // eslint-disable-next-line indent
+          const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true });
 
-      return res.send(updatedUser);
+        // eslint-disable-next-line indent
+          return res.send(updatedUser);
+        // eslint-disable-next-line indent
+        }
+
+      // eslint-disable-next-line indent
+        return res.send(new NoContentException());
+    } catch (error) {
+      // eslint-disable-next-line indent
+        // eslint-disable-next-line indent
+        return res.send(new ServerErrorException(error));
     }
-
-    return res.status(404).send('Usuário não encontrado');
   }
 
   private async delete(req: Request, res: Response, next: NextFunction): Promise<Response> {
-    const { id } = req.params;
+    try {
+      // eslint-disable-next-line indent
+        const { id } = req.params;
 
-    if (!ValidationService.validateId(id)) return res.status(400).send('Id inválido');
+      // eslint-disable-next-line indent
+        // eslint-disable-next-line indent
+        if (!ValidationService.validateId(id)) return res.send(new IdInvalidException());
 
-    const user = await User.findByIdAndDelete(id);
+      // eslint-disable-next-line indent
+        const user = await User.findByIdAndDelete(id);
 
-    if (!user) return res.status(404).send('Usuário não encontrado');
+      // eslint-disable-next-line indent
+        if (!user) return res.send(new NoContentException());
 
-    return res.status(200).send('Usuário deletado com sucesso.');
+      // eslint-disable-next-line indent
+        return res.status(200).send('Usuário deletado com sucesso.');
+    } catch (error) {
+      // eslint-disable-next-line indent
+        // eslint-disable-next-line indent
+        return res.send(new ServerErrorException(error));
+    }
   }
 }
 
