@@ -6,6 +6,7 @@ import ValidationService from '../services/ValidationService';
 import ServerErrorException from '../errors/ServerErrorException';
 import IdInvalidException from '../errors/IdInvalidException';
 import NoContentException from '../errors/NoContentException';
+import HttpStatusCode from '../responses/HttpStatusCode';
 
 class UserControler extends Controller {
   constructor() {
@@ -113,7 +114,7 @@ class UserControler extends Controller {
         const user = await User.findByIdAndDelete(id);
 
       // eslint-disable-next-line indent
-        if (!user) return res.send(new NoContentException());
+        if (!user) return res.status(HttpStatusCode.NO_CONTENT).send(new NoContentException());
 
       // eslint-disable-next-line indent
         return res.status(200).send('Usuário deletado com sucesso.');
