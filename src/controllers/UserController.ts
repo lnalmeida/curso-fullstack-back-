@@ -7,6 +7,8 @@ import ServerErrorException from '../errors/ServerErrorException';
 import IdInvalidException from '../errors/IdInvalidException';
 import NoContentException from '../errors/NoContentException';
 import HttpStatusCode from '../responses/HttpStatusCode';
+import responseCreate from '../responses/ResponseCreate';
+import responseOk from '../responses/ResponseOk';
 
 class UserControler extends Controller {
   constructor() {
@@ -25,7 +27,7 @@ class UserControler extends Controller {
     try {
       // eslint-disable-next-line indent
         const users = await User.find();// eslint-disable-next-line indent
-        return res.send(users);
+        return res.send(responseOk(res, users));
     } catch (error) {
       // eslint-disable-next-line indent
         return res.send(new ServerErrorException(error));
@@ -42,7 +44,7 @@ class UserControler extends Controller {
       // eslint-disable-next-line indent
         if (!user) return res.send(new NoContentException());
       // eslint-disable-next-line indent
-        return res.send(user);
+        return res.send(responseOk(res, user));
     } catch (error) {
       // eslint-disable-next-line indent
         // eslint-disable-next-line indent
@@ -64,7 +66,7 @@ class UserControler extends Controller {
         const user = await User.create(req.body);
 
       // eslint-disable-next-line indent
-        return res.status(201).send('Usuário cadastrado com sucesso.');
+      return res.send(responseCreate(res, user));
     } catch (error) {
       // eslint-disable-next-line indent
         // eslint-disable-next-line indent
@@ -88,7 +90,7 @@ class UserControler extends Controller {
           const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true });
 
         // eslint-disable-next-line indent
-          return res.send(updatedUser);
+        return res.send(responseOk(res, updatedUser));
         // eslint-disable-next-line indent
         }
 
@@ -117,7 +119,8 @@ class UserControler extends Controller {
         if (!user) return res.status(HttpStatusCode.NO_CONTENT).send(new NoContentException());
 
       // eslint-disable-next-line indent
-        return res.status(200).send('Usuário deletado com sucesso.');
+        return res.send(responseOk(res, user));
+      // return res.status(200).send('Usuário deletado com sucesso.');
     } catch (error) {
       // eslint-disable-next-line indent
         // eslint-disable-next-line indent
