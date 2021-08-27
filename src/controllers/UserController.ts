@@ -1,11 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { Types } from 'mongoose';
 
 import User from '../schemas/User';
 import Controller from './Controller';
 import ValidationService from '../services/ValidationService';
-import HttpStatusCode from '../responses/HttpStatusCode';
-import HttpExceptions from '../errors/HttpExceptions';
 import ServerErrorException from '../errors/ServerErrorException';
 import IdInvalidException from '../errors/IdInvalidException';
 import NoContentException from '../errors/NoContentException';
