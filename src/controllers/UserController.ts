@@ -27,10 +27,13 @@ class UserControler extends Controller {
     try {
       // eslint-disable-next-line indent
         const users = await User.find();// eslint-disable-next-line indent
-        return res.send(responseOk(res, users));
+        // eslint-disable-next-line indent
+        if (users) return responseOk(res, users);
+      // eslint-disable-next-line indent
+        next(new NoContentException());
     } catch (error) {
       // eslint-disable-next-line indent
-        return res.send(new ServerErrorException(error));
+        next(new ServerErrorException(error));
     }
   }
 
@@ -40,15 +43,16 @@ class UserControler extends Controller {
         const { id } = req.params;// eslint-disable-next-line indent
         const user = await User.findById(id);// eslint-disable-next-line indent
         // eslint-disable-next-line indent
-        if (!ValidationService.validateId(id)) return res.send(new IdInvalidException());
+        if (ValidationService.validateId(id, next)) return;
       // eslint-disable-next-line indent
-        if (!user) return res.send(new NoContentException());
+        if (user) return responseOk(res, user);
       // eslint-disable-next-line indent
-        return res.send(responseOk(res, user));
+        next(new NoContentException());
+      // eslint-disable-next-line indent
     } catch (error) {
       // eslint-disable-next-line indent
         // eslint-disable-next-line indent
-        res.send(new ServerErrorException(error));
+        next(new ServerErrorException(error));
     }
   }
 
@@ -66,11 +70,11 @@ class UserControler extends Controller {
         const user = await User.create(req.body);
 
       // eslint-disable-next-line indent
-      return res.send(responseCreate(res, user));
+      return responseCreate(res, user);
     } catch (error) {
       // eslint-disable-next-line indent
         // eslint-disable-next-line indent
-        return res.send(new ServerErrorException(error));
+        next(new ServerErrorException(error));
     }
   }
 
@@ -80,7 +84,7 @@ class UserControler extends Controller {
         const { id } = req.params;
 
       // eslint-disable-next-line indent
-        if (!ValidationService.validateId(id)) return res.send(new IdInvalidException());
+        if (ValidationService.validateId(id, next)) return;
 
       // eslint-disable-next-line indent
         const user = await User.findById(id);
@@ -90,16 +94,15 @@ class UserControler extends Controller {
           const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true });
 
         // eslint-disable-next-line indent
-        return res.send(responseOk(res, updatedUser));
-        // eslint-disable-next-line indent
-        }
+          return responseOk(res, updatedUser);
+      }
 
       // eslint-disable-next-line indent
-        return res.send(new NoContentException());
+        next(new NoContentException());
     } catch (error) {
       // eslint-disable-next-line indent
         // eslint-disable-next-line indent
-        return res.send(new ServerErrorException(error));
+        next(new ServerErrorException(error));
     }
   }
 
@@ -110,7 +113,7 @@ class UserControler extends Controller {
 
       // eslint-disable-next-line indent
         // eslint-disable-next-line indent
-        if (!ValidationService.validateId(id)) return res.send(new IdInvalidException());
+        if (ValidationService.validateId(id, next)) return;
 
       // eslint-disable-next-line indent
         const user = await User.findByIdAndDelete(id);
@@ -119,7 +122,7 @@ class UserControler extends Controller {
         if (!user) return res.status(HttpStatusCode.NO_CONTENT).send(new NoContentException());
 
       // eslint-disable-next-line indent
-        return res.send(responseOk(res, user));
+        return responseOk(res, user);
       // return res.status(200).send('Usuário deletado com sucesso.');
     } catch (error) {
       // eslint-disable-next-line indent

@@ -3,6 +3,8 @@ import cors from 'cors';
 
 import mongoose from 'mongoose';
 import Controller from './controllers/Controller';
+import notFoundErrorMiddleware from './middlewares/NotFoundErrorMiddleware';
+import runTimeErrorMiddleware from './middlewares/RunTimeErrorMiddleware';
 
 class App {
 public app: express.Application;
@@ -15,6 +17,8 @@ public constructor(controllers: Controller[]) {
   this.connectDatabase();
   this.initExpressJSON();
   this.initControllers(controllers);
+  this.initNotFoundErrorMiddleware();
+  this.initRunTimeErrorMiddleware();
 }
 
 public initMongoose():void {
@@ -39,6 +43,14 @@ private initControllers(controllers: Controller[]):void {
   controllers.forEach((controller) => {
     this.app.use('/', controller.router);
   });
+}
+
+private initNotFoundErrorMiddleware():void {
+  this.app.all('*', notFoundErrorMiddleware);
+}
+
+private initRunTimeErrorMiddleware():void {
+  this.app.use(runTimeErrorMiddleware);
 }
 
 public listen(port: number): void {
