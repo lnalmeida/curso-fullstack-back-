@@ -4,7 +4,6 @@ import User from '../schemas/User';
 import Controller from './Controller';
 import ValidationService from '../services/ValidationService';
 import ServerErrorException from '../errors/ServerErrorException';
-import IdInvalidException from '../errors/IdInvalidException';
 import NoContentException from '../errors/NoContentException';
 import HttpStatusCode from '../responses/HttpStatusCode';
 import responseCreate from '../responses/ResponseCreate';
