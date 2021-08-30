@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import User from '../schemas/User';
 import Controller from './Controller';
 import ValidationService from '../services/ValidationService';
+import HashPassword from '../services/HashService';
 import ServerErrorException from '../errors/ServerErrorException';
 import NoContentException from '../errors/NoContentException';
 import HttpStatusCode from '../responses/HttpStatusCode';
@@ -57,19 +58,19 @@ class UserControler extends Controller {
 
   private async create(req: Request, res: Response, next: NextFunction):Promise<Response> {
     try {
-      // eslint-disable-next-line indent
-        const { email } = req.body;
-      // eslint-disable-next-line indent
-        const userExists = await User.findOne({ email });
+      const { name, email, password } = req.body;
 
-      // eslint-disable-next-line indent
-        if (userExists) return res.status(202).send('Usuário já existente');
+      const encrypted = HashPassword(password);
 
+      const userData = {
+        name,
+        email,
+        password: encrypted,
+      };
       // eslint-disable-next-line indent
-        const user = await User.create(req.body);
-
+        const user = await User.create(userData);// eslint-disable-next
       // eslint-disable-next-line indent
-      return responseCreate(res, user);
+        return responseCreate(res, user);
     } catch (error) {
       // eslint-disable-next-line indent
         // eslint-disable-next-line indent
