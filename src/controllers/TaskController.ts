@@ -1,23 +1,22 @@
 import { Request, Response, NextFunction } from 'express';
 
-import User from '../schemas/User';
+import Task, { TaskInterface } from '../schemas/Task';
 import Controller from './Controller';
 import ValidationService from '../services/ValidationService';
-import HashPassword from '../services/HashService';
 import ServerErrorException from '../errors/ServerErrorException';
 import NoContentException from '../errors/NoContentException';
 import HttpStatusCode from '../responses/HttpStatusCode';
 import responseCreate from '../responses/ResponseCreate';
 import responseOk from '../responses/ResponseOk';
-import UserService from '../services/UserService';
+import TaskService from '../services/TaskService';
 
-class UserControler extends Controller {
+class TaskController extends Controller {
   constructor() {
-    super('/users');
+    super('/tasks');
   }
 
   protected initRoutes(): void {
-    this.router.get(this.path, this.list);
+    this.router.get(`${this.path}/:filter/:_id`, this.list);
     this.router.get(`${this.path}/:id`, this.show);
     this.router.post(this.path, this.create);
     this.router.put(`${this.path}/:id`, this.update);
@@ -27,9 +26,9 @@ class UserControler extends Controller {
   private async list(req: Request, res: Response, next: NextFunction): Promise<Response> {
     try {
       // eslint-disable-next-line indent
-        const users = await User.find();// eslint-disable-next-line indent
+        const tasks = await Task.find(TaskService.getParams(req)).populate('responsible');// eslint-disable-next-line indent
         // eslint-disable-next-line indent
-        if (users) return responseOk(res, users);
+        if (tasks.length) return responseOk(res, tasks);
       // eslint-disable-next-line indent
         next(new NoContentException());
     } catch (error) {
@@ -42,11 +41,12 @@ class UserControler extends Controller {
     try {
       // eslint-disable-next-line indent
         const { id } = req.params;// eslint-disable-next-line indent
-        const user = await User.findById(id);// eslint-disable-next-line indent
         // eslint-disable-next-line indent
         if (ValidationService.validateId(id, next)) return;
       // eslint-disable-next-line indent
-        if (user) return responseOk(res, user);
+        const task = await Task.findById(id);// eslint-disable-next-line indent
+        // eslint-disable-next-line indent
+        if (task) return responseOk(res, task);
       // eslint-disable-next-line indent
         next(new NoContentException());
       // eslint-disable-next-line indent
@@ -59,19 +59,16 @@ class UserControler extends Controller {
 
   private async create(req: Request, res: Response, next: NextFunction):Promise<Response> {
     try {
-      const { name, email, password } = req.body;
-
-      const encrypted = HashPassword(password);
-
-      const userData = {
-        name,
-        email,
-        password: encrypted,
-      };
       // eslint-disable-next-line indent
-        const user = await User.create(userData);// eslint-disable-next
+        let task: TaskInterface = req.body;
       // eslint-disable-next-line indent
-        return responseCreate(res, user);
+        TaskService.checkStatusFinished(task);
+      // eslint-disable-next-line indent
+        task = await Task.create(task);// eslint-disable-next
+      // eslint-disable-next-line indent
+        task = await Task.findById(task.id).populate('responsible');
+      // eslint-disable-next-line indent
+        return responseCreate(res, task);
     } catch (error) {
       // eslint-disable-next-line indent
         // eslint-disable-next-line indent
@@ -83,26 +80,28 @@ class UserControler extends Controller {
     try {
       // eslint-disable-next-line indent
         const { id } = req.params;
-
       // eslint-disable-next-line indent
         if (ValidationService.validateId(id, next)) return;
 
       // eslint-disable-next-line indent
-        const user = await User.findById(id);
+        let task: TaskInterface = req.body;
+      // eslint-disable-next-line indent
+        TaskService.checkStatusFinished(task);
 
-      if (user) {
-        // eslint-disable-next-line indent
-          const updatedUser = await User.findByIdAndUpdate(id, req.body, { new: true });
+      // eslint-disable-next-line indent
+        task = await Task.findByIdAndUpdate(id, task, { new: true });
 
+      if (task) {
         // eslint-disable-next-line indent
-          return responseOk(res, updatedUser);
+          task = await Task.findById(id).populate('responsible');
+        // eslint-disable-next-line indent
+          return responseOk(res, task);
       }
 
       // eslint-disable-next-line indent
         next(new NoContentException());
     } catch (error) {
       // eslint-disable-next-line indent
-        // eslint-disable-next-line indent
         next(new ServerErrorException(error));
     }
   }
@@ -111,21 +110,14 @@ class UserControler extends Controller {
     try {
       // eslint-disable-next-line indent
         const { id } = req.params;
-
       // eslint-disable-next-line indent
-        // eslint-disable-next-line indent
         if (ValidationService.validateId(id, next)) return;
       // eslint-disable-next-line indent
-        if (UserService.validateExistAnyTask(id, next)) return;
-
+        const task = await Task.findByIdAndDelete(id);
       // eslint-disable-next-line indent
-        const user = await User.findByIdAndDelete(id);
-
+        if (!task) return res.status(HttpStatusCode.NO_CONTENT).send(new NoContentException());
       // eslint-disable-next-line indent
-        if (!user) return res.status(HttpStatusCode.NO_CONTENT).send(new NoContentException());
-
-      // eslint-disable-next-line indent
-        return responseOk(res, user);
+        return responseOk(res, task);
       // return res.status(200).send('Usuário deletado com sucesso.');
     } catch (error) {
       // eslint-disable-next-line indent
@@ -135,4 +127,4 @@ class UserControler extends Controller {
   }
 }
 
-export default UserControler;
+export default TaskController;

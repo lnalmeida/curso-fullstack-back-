@@ -21,20 +21,18 @@ const TaskSchema = new Schema({
   },
   status: {
     type: String,
-    required: [true, 'O campo STATUS é obrigatório'],
-    uppercase: true,
     validate: {
-      validator: (value: string) => {
-        if (value === StatusEnum.OPEN || value === StatusEnum.FINISHED) {
-          return true;
-        }
+      validator: (value) => {
+        if (value === StatusEnum.OPEN || value === StatusEnum.FINISHED) return true;
         return false;
       },
-      // eslint-disable-next-line no-unused-expressions
-      message: (props) => { `${props.value} não é um status válido.`; },
+      message: (props) => `${props.value} não é um status válido.`,
     },
+    required: [true, 'Status obrigatório'],
+    uppercase: true,
   },
-  concluded: {
+  // eslint-disable-next-line indent
+    concluded: {
     type: Date,
   },
   responsible: {
