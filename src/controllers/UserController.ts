@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 import { Request, Response, NextFunction } from 'express';
 
 import User from '../schemas/User';
@@ -111,24 +112,22 @@ class UserControler extends Controller {
     try {
       // eslint-disable-next-line indent
         const { id } = req.params;
-
-      // eslint-disable-next-line indent
         // eslint-disable-next-line indent
         if (ValidationService.validateId(id, next)) return;
       // eslint-disable-next-line indent
         if (UserService.validateExistAnyTask(id, next)) return;
 
       // eslint-disable-next-line indent
-        const user = await User.findByIdAndDelete(id);
-
+        const user = await User.findById(id);
       // eslint-disable-next-line indent
         if (!user) return res.status(HttpStatusCode.NO_CONTENT).send(new NoContentException());
 
-      // eslint-disable-next-line indent
+        user.deleteOne({ _id: id });
+
         return responseOk(res, user);
+
       // return res.status(200).send('Usuário deletado com sucesso.');
     } catch (error) {
-      // eslint-disable-next-line indent
         // eslint-disable-next-line indent
         return res.send(new ServerErrorException(error));
     }
