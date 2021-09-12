@@ -115,14 +115,14 @@ class UserControler extends Controller {
         // eslint-disable-next-line indent
         if (ValidationService.validateId(id, next)) return;
       // eslint-disable-next-line indent
-        if (UserService.validateExistAnyTask(id, next)) return;
+        if (await UserService.validateExistAnyTask(id, next)) return;
 
       // eslint-disable-next-line indent
         const user = await User.findById(id);
       // eslint-disable-next-line indent
         if (!user) return res.status(HttpStatusCode.NO_CONTENT).send(new NoContentException());
 
-        user.deleteOne({ _id: id });
+        user.deleteOne();
 
         return responseOk(res, user);
 
